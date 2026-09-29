@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto & Forex AI Intelligence Terminal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Pro Technical Charts -->
+    <script src="https://cdn.jsdelivr.com/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#080a0f',
+                            card: '#10141d',
+                            border: '#1e2638',
+                            green: '#00ff88',
+                            red: '#ff0055',
+                            cyan: '#00e5ff',
+                            amber: '#ffb700',
+                            purple: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'radar': 'radar 4s linear infinite',
+                    },
+                    keyframes: {
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(1000%)' }
+                        },
+                        radar: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #080a0f;
+            color: #c3c7d3;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Terminal Scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d111a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2638;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00e5ff;
+        }
+
+        .glow-green {
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+        }
+        .glow-red {
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.25);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+        }
+        
+        .radar-grid {
+            background-image: radial-gradient(rgba(0, 229, 255, 0.15) 1px, transparent 1px);
+            background-size: 16px 16px;
+        }
+        
+        .terminal-text {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(16, 20, 29, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(30, 38, 56, 0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-slate-300">
+
+    <!-- Top Header Navigation -->
+    <header class="border-b border-brand-border bg-brand-card/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-[1920px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo & Agent Status -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded bg-gradient-to-tr from-brand-cyan to-brand-green flex items-center justify-center text-slate-950 font-bold font-mono text-lg shadow-lg">
+                        <i data-lucide="cpu" class="w-5 h-5 stroke-[2.5]"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-slate-100 tracking-wider font-mono text-sm">NEURO-QUANT</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 font-mono">v4.8 PRO</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-mono">Autonomous Cross-Asset Intelligence Agent</p>
+                    </div>
+                </div>
+
+                <!-- Live Agent Pulse Indicator -->
+                <div class="hidden md:flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-xs">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-green"></span>
+                    </span>
+                    <span class="font-mono text-[11px] text-brand-green tracking-wide">LIVE INGESTION ACTIVE</span>
+                </div>
+            </div>
+
+            <!-- Asset Tabs -->
+            <div class="flex items-center bg-brand-bg p-1 rounded-lg border border-brand-border" id="assetSelector">
+                <button onclick="switchAsset('EURCHF')" id="btn-EURCHF" class="asset-btn px-3 py-1.5 rounded-md text-xs font-mono font-semibold transition-all flex items-center space-x-1.5 bg-brand-card text-brand-cyan border border-brand-cyan/30">
+                    <span>EUR/CHF</span>
+                </button>
+                <button onclick="switchAsset('EURUSD')" id="btn-EURUSD" class="asset-btn px-3 py-1.5 rounded-md text-xs font-mono font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+                    <span>EUR/USD</span>
+                </button>
+                <button onclick="switchAsset('DOGEUSD')" id="btn-DOGEUSD" class="asset-btn px-3 py-1.5 rounded-md text-xs font-mono font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+                    <span>DOGE/USD</span>
+                </button>
+                <button onclick="switchAsset('USDJPY')" id="btn-USDJPY" class="asset-btn px-3 py-1.5 rounded-md text-xs font-mono font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+                    <span>USD/JPY</span>
+                </button>
+            </div>
+
+            <!-- Actions & Modal Triggers -->
+            <div class="flex items-center space-x-2">
+                <button onclick="forceReanalyze()" id="ingestBtn" class="px-3 py-1.5 rounded bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 text-xs font-mono transition-all flex items-center space-x-2">
+                    <i data-lucide="refresh-cw" id="ingestIcon" class="w-3.5 h-3.5"></i>
+                    <span id="ingestBtnText">INGEST & RE-ANALYZE</span>
+                </button>
+                
+                <button onclick="openDeployModal()" class="px-3 py-1.5 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs font-mono transition-all flex items-center space-x-1.5">
+                    <i data-lucide="github" class="w-3.5 h-3.5"></i>
+                    <span>Deploy to GitHub</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Realtime Ticker Tape Bar -->
+        <div class="bg-brand-bg/80 border-t border-brand-border/60 py-1 px-4 text-xs font-mono overflow-hidden whitespace-nowrap">
+            <div class="flex items-center justify-between space-x-6 text-[11px]" id="tickerTape">
+                <!-- Ticker items dynamically injected -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 max-w-[1920px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- LEFT COLUMN: Scraping Intelligence Terminal & Sentiment (Cols 3/12) -->
+        <section class="lg:col-span-3 flex flex-col gap-4">
+            
+            <!-- Active Sentiment Gauge & Radar Scanner -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="radar" class="w-4 h-4 text-brand-cyan animate-pulse"></i>
+                        <h2 class="text-xs font-mono font-bold tracking-wider text-slate-200">CROSS-CHANNEL NLP RADAR</h2>
+                    </div>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700" id="sentimentSourceCount">2,840 Scrapes/m</span>
+                </div>
+
+                <!-- Circular Visualizer & Sentiment Gauge -->
+                <div class="py-2 flex flex-col items-center justify-center relative">
+                    <!-- Gauge Meter Canvas -->
+                    <div class="relative w-40 h-24 flex items-center justify-center">
+                        <canvas id="sentimentGauge" class="w-full h-full"></canvas>
+                        <div class="absolute bottom-0 text-center">
+                            <span class="text-2xl font-bold font-mono tracking-tight" id="sentimentScoreValue">+68.4</span>
+                            <p class="text-[10px] font-mono text-brand-green uppercase font-semibold" id="sentimentLabel">BULLISH SENTIMENT</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sentiment Weight Breakdown -->
+                <div class="grid grid-cols-3 gap-2 mt-2 pt-3 border-t border-brand-border/60 text-center font-mono text-[10px]">
+                    <div class="bg-brand-bg/60 p-1.5 rounded border border-brand-border/40">
+                        <p class="text-slate-500">REDDIT</p>
+                        <p class="font-bold text-brand-green" id="scoreReddit">+72%</p>
+                    </div>
+                    <div class="bg-brand-bg/60 p-1.5 rounded border border-brand-border/40">
+                        <p class="text-slate-500">TELEGRAM</p>
+                        <p class="font-bold text-brand-green" id="scoreTg">+64%</p>
+                    </div>
+                    <div class="bg-brand-bg/60 p-1.5 rounded border border-brand-border/40">
+                        <p class="text-slate-500">NEWS NLP</p>
+                        <p class="font-bold text-brand-cyan" id="scoreNews">+81%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Stream Feed -->
+            <div class="glass-panel rounded-xl p-4 flex-1 flex flex-col min-h-[380px] max-h-[550px] relative overflow-hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="terminal" class="w-4 h-4 text-brand-green"></i>
+                        <h2 class="text-xs font-mono font-bold tracking-wider text-slate-200">AGENT SCRAPER FEED</h2>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-brand-green animate-ping"></span>
+                        <span class="text-[10px] font-mono text-slate-400">REALTIME</span>
+                    </div>
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="flex space-x-1 mb-2 font-mono text-[10px]">
+                    <span class="px-2 py-0.5 rounded bg-brand-border/60 text-slate-300">ALL</span>
+                    <span class="px-2 py-0.5 rounded bg-brand-bg text-slate-500 hover:text-slate-300 cursor-pointer">REDDIT</span>
+                    <span class="px-2 py-0.5 rounded bg-brand-bg text-slate-500 hover:text-slate-300 cursor-pointer">TELEGRAM</span>
+                    <span class="px-2 py-0.5 rounded bg-brand-bg text-slate-500 hover:text-slate-300 cursor-pointer">NEWS</span>
+                </div>
+
+                <!-- Terminal Output Window -->
+                <div class="flex-1 bg-brand-bg/90 rounded-lg p-2.5 border border-brand-border font-mono text-[11px] overflow-y-auto space-y-2 relative" id="terminalLogs">
+                    <!-- Dynamic logs stream here -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- CENTER COLUMN: Interactive Chart & Technical Projection (Cols 6/12) -->
+        <section class="lg:col-span-6 flex flex-col gap-4">
+            
+            <!-- Main Price Chart Panel -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col h-full min-h-[500px]">
+                
+                <!-- Chart Header Toolbar -->
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-brand-border/60 pb-3">
+                    
+                    <!-- Selected Asset Info -->
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 rounded-lg bg-brand-bg border border-brand-border">
+                            <span class="font-mono font-bold text-lg text-slate-100" id="currentAssetTitle">EUR / CHF</span>
+                        </div>
+                        <div>
+                            <div class="flex items-baseline space-x-2">
+                                <span class="font-mono text-2xl font-bold tracking-tight text-slate-100" id="currentAssetPrice">0.93842</span>
+                                <span class="font-mono text-xs font-semibold text-brand-green flex items-center" id="currentAssetChange">
+                                    <i data-lucide="trending-up" class="w-3.5 h-3.5 mr-0.5 inline"></i> +0.42%
+                                </span>
+                            </div>
+                            <div class="flex space-x-3 text-[10px] font-mono text-slate-400 mt-0.5">
+                                <span>24h H: <strong class="text-slate-200" id="currentAssetHigh">0.94110</strong></span>
+                                <span>24h L: <strong class="text-slate-200" id="currentAssetLow">0.93520</strong></span>
+                                <span>Spread: <span class="text-brand-cyan">0.8 pts</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeframe Horizon Selectors -->
+                    <div class="flex items-center bg-brand-bg p-1 rounded-lg border border-brand-border" id="timeframeSelector">
+                        <button onclick="switchTimeframe('5m')" id="tf-5m" class="tf-btn px-2.5 py-1 rounded text-xs font-mono font-medium text-slate-400 hover:text-slate-200 transition-all">5M</button>
+                        <button onclick="switchTimeframe('10m')" id="tf-10m" class="tf-btn px-2.5 py-1 rounded text-xs font-mono font-medium text-slate-400 hover:text-slate-200 transition-all">10M</button>
+                        <button onclick="switchTimeframe('1h')" id="tf-1h" class="tf-btn px-2.5 py-1 rounded text-xs font-mono font-medium bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40">1H</button>
+                        <button onclick="switchTimeframe('1d')" id="tf-1d" class="tf-btn px-2.5 py-1 rounded text-xs font-mono font-medium text-slate-400 hover:text-slate-200 transition-all">DAILY</button>
+                    </div>
+
+                </div>
+
+                <!-- Chart Canvas Container -->
+                <div class="relative flex-1 w-full h-[340px] bg-brand-bg/40 rounded-lg p-2 border border-brand-border/40">
+                    <canvas id="mainChart"></canvas>
+                    
+                    <!-- Overlay Badge for AI Forecast Horizon -->
+                    <div class="absolute top-4 right-4 bg-brand-card/90 border border-brand-cyan/40 backdrop-blur rounded px-2.5 py-1 flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
+                        <span class="text-[10px] font-mono text-brand-cyan">AI AI FORECAST TRAJECTORY ON (<span id="overlayTf">1H</span>)</span>
+                    </div>
+                </div>
+
+                <!-- Sub Indicator Charts / Analytics Strip -->
+                <div class="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-brand-border/60 font-mono text-xs">
+                    <div class="bg-brand-bg/70 p-2.5 rounded-lg border border-brand-border/50">
+                        <div class="text-[10px] text-slate-400 flex justify-between">
+                            <span>RSI (14)</span>
+                            <span class="text-brand-green font-bold" id="valRsi">61.4 (Bullish)</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div class="bg-brand-green h-full rounded-full" id="barRsi" style="width: 61.4%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-brand-bg/70 p-2.5 rounded-lg border border-brand-border/50">
+                        <div class="text-[10px] text-slate-400 flex justify-between">
+                            <span>MACD SIGNAL</span>
+                            <span class="text-brand-cyan font-bold" id="valMacd">CROSSOVER (+0.0012)</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div class="bg-brand-cyan h-full rounded-full" style="width: 78%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-brand-bg/70 p-2.5 rounded-lg border border-brand-border/50">
+                        <div class="text-[10px] text-slate-400 flex justify-between">
+                            <span>ORDERBOOK DEPTH</span>
+                            <span class="text-brand-amber font-bold" id="valDepth">64% Bids</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden flex">
+                            <div class="bg-brand-green h-full" style="width: 64%"></div>
+                            <div class="bg-brand-red h-full" style="width: 36%"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: Reasoning Engine & Signals (Cols 3/12) -->
+        <section class="lg:col-span-3 flex flex-col gap-4">
+            
+            <!-- Deep AI Reasoning Engine Card -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="brain-circuit" class="w-4 h-4 text-purple-400"></i>
+                            <h2 class="text-xs font-mono font-bold tracking-wider text-slate-200">DEEP REASONING ENGINE</h2>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">QUANT MODEL v4.2</span>
+                    </div>
+
+                    <!-- Confidence Meter -->
+                    <div class="mb-4 bg-brand-bg/80 p-3 rounded-lg border border-brand-border">
+                        <div class="flex justify-between items-center mb-1 font-mono text-xs">
+                            <span class="text-slate-400">AGENT CONFIDENCE</span>
+                            <span class="text-brand-green font-bold text-sm" id="modelConfidence">84.5%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-brand-cyan to-brand-green h-full rounded-full transition-all duration-500" id="confidenceBar" style="width: 84.5%"></div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-1 mt-2 text-[9px] font-mono text-center text-slate-400">
+                            <div>Tech: <span class="text-slate-200" id="techWeight">88%</span></div>
+                            <div>Social: <span class="text-slate-200" id="socialWeight">79%</span></div>
+                            <div>Macro: <span class="text-slate-200" id="macroWeight">86%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Synthesis Reasoning Output -->
+                    <div class="space-y-2.5 text-xs">
+                        <h3 class="text-[11px] font-mono font-semibold text-brand-cyan uppercase tracking-wider flex items-center">
+                            <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Executive Thesis (<span id="thesisTimeframe">1H Horizon</span>)
+                        </h3>
+                        <p class="text-slate-300 text-[11px] leading-relaxed bg-brand-bg/50 p-2.5 rounded border border-brand-border/60 font-mono" id="executiveThesis">
+                            Ingested 1,240 forum posts & ECB policy headlines. Technical indicators show strong bullish divergence on the 1H timeframe coupled with heavy bid depth on order books.
+                        </p>
+                    </div>
+
+                    <!-- Key Drivers List -->
+                    <div class="mt-3 space-y-1.5 font-mono text-[11px]">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-wider">Identified Catalysts:</span>
+                        <div class="space-y-1" id="catalystsList">
+                            <!-- Dynamic Catalysts Inserted -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade Execution Levels -->
+                <div class="mt-4 pt-3 border-t border-brand-border/60">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-mono font-bold text-slate-200">SIGNAL CALLOUT</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-brand-green/20 text-brand-green border border-brand-green/40" id="signalAction">STRONG BUY</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                        <div class="bg-brand-bg/90 p-2 rounded border border-brand-border">
+                            <span class="text-[10px] text-slate-500 block">STOP LOSS</span>
+                            <span class="font-bold text-brand-red" id="targetSL">0.93410</span>
+                        </div>
+                        <div class="bg-brand-bg/90 p-2 rounded border border-brand-border">
+                            <span class="text-[10px] text-slate-500 block">TAKE PROFIT</span>
+                            <span class="font-bold text-brand-green" id="targetTP">0.94650</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Risk & Volatility Radar -->
+            <div class="glass-panel rounded-xl p-4 flex-1">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-brand-amber"></i>
+                        <h2 class="text-xs font-mono font-bold tracking-wider text-slate-200">RISK ASSESSMENT</h2>
+                    </div>
+                    <span class="text-[10px] font-mono text-brand-amber font-bold" id="riskLevel">MODERATE RISK</span>
+                </div>
+
+                <div class="space-y-2 text-[11px] font-mono">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Volatility Index (ATR):</span>
+                        <span class="text-slate-200 font-bold" id="atrValue">12.4 pips</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">News Event Proximity:</span>
+                        <span class="text-brand-cyan font-bold" id="newsEvent">ECB Rate Speech (32m)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Liquidity Rating:</span>
+                        <span class="text-brand-green font-bold">HIGH (Tier 1 Providers)</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- GitHub Pages Hosting Modal -->
+    <div id="deployModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="glass-panel bg-brand-card rounded-xl max-w-2xl w-full p-6 border border-brand-border relative shadow-2xl">
+            <button onclick="closeDeployModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="p-2 bg-purple-500/20 text-purple-400 rounded-lg">
+                    <i data-lucide="github" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-100 font-mono">Host Live Dashboard on GitHub Pages</h3>
+                    <p class="text-xs text-slate-400 font-mono">Deploy this real-time agent dashboard online in under 2 minutes for free.</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 font-mono text-xs">
+                <div class="bg-brand-bg p-3 rounded-lg border border-brand-border">
+                    <p class="text-slate-300 font-semibold mb-1">Step 1: Create GitHub Repository</p>
+                    <p class="text-slate-400 text-[11px]">Go to <a href="https://github.com/new" target="_blank" class="text-brand-cyan underline">github.com/new</a> and create a public repository named <code class="text-brand-green">crypto-forex-ai-terminal</code>.</p>
+                </div>
+
+                <div class="bg-brand-bg p-3 rounded-lg border border-brand-border">
+                    <p class="text-slate-300 font-semibold mb-1">Step 2: Save Code as index.html</p>
+                    <p class="text-slate-400 text-[11px]">Save this entire file code as <code class="text-brand-green">index.html</code> on your computer.</p>
+                </div>
+
+                <div class="bg-brand-bg p-3 rounded-lg border border-brand-border space-y-2">
+                    <p class="text-slate-300 font-semibold">Step 3: Push Code via Terminal / Git</p>
+                    <pre class="bg-slate-950 p-2.5 rounded text-brand-green overflow-x-auto text-[11px]">
+git init
+git add index.html
+git commit -m "Deploy Trading Intelligence Dashboard"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/crypto-forex-ai-terminal.git
+git push -u origin main</pre>
+                </div>
+
+                <div class="bg-brand-bg p-3 rounded-lg border border-brand-border">
+                    <p class="text-slate-300 font-semibold mb-1">Step 4: Enable GitHub Pages</p>
+                    <p class="text-slate-400 text-[11px]">Go to Repository <strong class="text-slate-200">Settings -> Pages</strong>. Set Source to <strong class="text-brand-cyan">Deploy from a branch (main / root)</strong> and save! Your dashboard will be live at <code class="text-brand-green">https://YOUR-USERNAME.github.io/crypto-forex-ai-terminal/</code>.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeDeployModal()" class="px-4 py-2 bg-brand-cyan text-slate-950 font-bold font-mono text-xs rounded hover:bg-brand-cyan/90 transition-all">
+                    Got it, Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Asset Data Stores
+        const assetsData = {
+            EURCHF: {
+                name: 'EUR / CHF',
+                price: 0.93842,
+                change: 0.42,
+                high: 0.94110,
+                low: 0.93520,
+                decimals: 5,
+                sentiment: 68.4,
+                sentimentLabel: 'BULLISH SENTIMENT',
+                signal: 'STRONG BUY',
+                confidence: 84.5,
+                sl: 0.93410,
+                tp: 0.94650,
+                atr: '11.8 pips',
+                rsi: 61.4,
+                thesis: "Ingested 1,420 forum posts & ECB policy headlines. Technical indicators show strong bullish divergence on the selected timeframe coupled with heavy bid depth on Swiss National Bank liquidity windows.",
+                catalysts: [
+                    "ECB Dovish Pause expectations pushing EUR cross volume.",
+                    "Reddit r/Forex sentiment shifted +14% Bullish past 2h.",
+                    "Order book bid depth clustering at 0.9360 key support."
+                ],
+                feedSources: ['r/Forex', 'Telegram @FXSignals', 'Reuters Macro', 'Bloomberg FX']
+            },
+            EURUSD: {
+                name: 'EUR / USD',
+                price: 1.08452,
+                change: -0.28,
+                high: 1.08910,
+                low: 1.08210,
+                decimals: 5,
+                sentiment: -42.1,
+                sentimentLabel: 'BEARISH PRESSURE',
+                signal: 'SHORT / SELL',
+                confidence: 79.2,
+                sl: 1.08980,
+                tp: 1.07750,
+                atr: '24.5 pips',
+                rsi: 38.2,
+                thesis: "US Dollar Index (DXY) gaining traction on resilient US CPI sentiment. Social chatter indicates retail trader long squeeze potential following rejection at 1.0880 resistance.",
+                catalysts: [
+                    "Fed hawkish comment chatter trending on X / Twitter.",
+                    "Reddit trader long positions hit 68% (contrarian sell signal).",
+                    "MACD bearish crossover confirmed on lower timeframes."
+                ],
+                feedSources: ['r/WallStreetBets', 'Telegram @CryptoForexNews', 'ForexFactory Feed']
+            },
+            DOGEUSD: {
+                name: 'DOGE / USD',
+                price: 0.16482,
+                change: 8.94,
+                high: 0.17820,
+                low: 0.14910,
+                decimals: 5,
+                sentiment: 89.1,
+                sentimentLabel: 'HYPER BULLISH',
+                signal: 'AGGRESSIVE BUY',
+                confidence: 91.0,
+                sl: 0.15100,
+                tp: 0.19200,
+                atr: '0.014 pts',
+                rsi: 76.8,
+                thesis: "Massive spike in social momentum across X and Telegram channels following viral post mentioning payment integrations. On-chain whale address accumulation accelerated by 34% over last 4 hours.",
+                catalysts: [
+                    "Social volume velocity up 310% in 30 minutes.",
+                    "Over $4.2M short liquidations triggered on Binance.",
+                    "Whale wallet ingestion detected +42M DOGE transfer."
+                ],
+                feedSources: ['r/CryptoCurrency', 'r/dogecoin', 'Telegram @CryptoWhaleAlert', 'CoinDesk API']
+            },
+            USDJPY: {
+                name: 'USD / JPY',
+                price: 154.68,
+                change: 0.15,
+                high: 155.20,
+                low: 154.10,
+                decimals: 2,
+                sentiment: 12.5,
+                sentimentLabel: 'NEUTRAL / RANGE',
+                signal: 'HOLD / WATCH',
+                confidence: 62.0,
+                sl: 153.80,
+                tp: 155.80,
+                atr: '42.1 pips',
+                rsi: 51.0,
+                thesis: "Consolidation pattern tightening as markets await Bank of Japan (BOJ) policy speech. High risk of intervention chatter near 155.00 limit zone keeping sentiment cautious.",
+                catalysts: [
+                    "BOJ intervention warning chatter logged on Bloomberg.",
+                    "Mixed sentiment on Japanese retail forex forums.",
+                    "RSI tightly bound in 48-52 range indicating low momentum."
+                ],
+                feedSources: ['Nikkei Asian News', 'r/Forex', 'Telegram @TokyoFX']
+            }
+        };
+
+        // Application State
+        let currentAssetKey = 'EURCHF';
+        let currentTimeframe = '1h';
+        let chartInstance = null;
+        let gaugeChartInstance = null;
+
+        window.onload = function () {
+            // Initialize Icons
+            lucide.createIcons();
+            
+            // Build Main Chart & Sentiment Gauge
+            initMainChart();
+            initGaugeChart();
+
+            // Populate Initial UI State
+            updateDashboardUI();
+
+            // Start Continuous Ingestion Loop Simulators
+            startScraperFeedSimulation();
+            startPriceTickSimulation();
+            startTickerTape();
+        };
+
+        function switchAsset(assetKey) {
+            currentAssetKey = assetKey;
+            
+            // Highlight Buttons
+            document.querySelectorAll('.asset-btn').forEach(btn => {
+                btn.className = "asset-btn px-3 py-1.5 rounded-md text-xs font-mono font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5";
+            });
+            const activeBtn = document.getElementById(`btn-${assetKey}`);
+            if (activeBtn) {
+                activeBtn.className = "asset-btn px-3 py-1.5 rounded-md text-xs font-mono font-semibold transition-all flex items-center space-x-1.5 bg-brand-card text-brand-cyan border border-brand-cyan/30";
+            }
+
+            updateDashboardUI();
+            updateChartData();
+        }
+
+        function switchTimeframe(tf) {
+            currentTimeframe = tf;
+            document.getElementById('overlayTf').innerText = tf.toUpperCase();
+            document.getElementById('thesisTimeframe').innerText = tf.toUpperCase() + ' Horizon';
+
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.className = "tf-btn px-2.5 py-1 rounded text-xs font-mono font-medium text-slate-400 hover:text-slate-200 transition-all";
+            });
+            const activeTfBtn = document.getElementById(`tf-${tf}`);
+            if (activeTfBtn) {
+                activeTfBtn.className = "tf-btn px-2.5 py-1 rounded text-xs font-mono font-medium bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40";
+            }
+
+            updateChartData();
+        }
+
+        function updateDashboardUI() {
+            const asset = assetsData[currentAssetKey];
+
+            // Header & Asset Title
+            document.getElementById('currentAssetTitle').innerText = asset.name;
+            document.getElementById('currentAssetPrice').innerText = asset.price.toFixed(asset.decimals);
+            
+            const changeEl = document.getElementById('currentAssetChange');
+            if (asset.change >= 0) {
+                changeEl.className = "font-mono text-xs font-semibold text-brand-green flex items-center";
+                changeEl.innerHTML = `<i data-lucide="trending-up" class="w-3.5 h-3.5 mr-0.5 inline"></i> +${asset.change}%`;
+            } else {
+                changeEl.className = "font-mono text-xs font-semibold text-brand-red flex items-center";
+                changeEl.innerHTML = `<i data-lucide="trending-down" class="w-3.5 h-3.5 mr-0.5 inline"></i> ${asset.change}%`;
+            }
+
+            document.getElementById('currentAssetHigh').innerText = asset.high.toFixed(asset.decimals);
+            document.getElementById('currentAssetLow').innerText = asset.low.toFixed(asset.decimals);
+
+            // Sentiment Score
+            const sentimentVal = document.getElementById('sentimentScoreValue');
+            sentimentVal.innerText = (asset.sentiment >= 0 ? '+' : '') + asset.sentiment;
+            sentimentVal.className = `text-2xl font-bold font-mono tracking-tight ${asset.sentiment >= 0 ? 'text-brand-green' : 'text-brand-red'}`;
+            
+            document.getElementById('sentimentLabel').innerText = asset.sentimentLabel;
+            document.getElementById('sentimentLabel').className = `text-[10px] font-mono uppercase font-semibold ${asset.sentiment >= 0 ? 'text-brand-green' : 'text-brand-red'}`;
+
+            // Gauge Update
+            updateGaugeChart(asset.sentiment);
+
+            // Reasoning Engine Updates
+            document.getElementById('modelConfidence').innerText = asset.confidence + '%';
+            document.getElementById('confidenceBar').style.width = asset.confidence + '%';
+            document.getElementById('executiveThesis').innerText = asset.thesis;
+
+            // Catalysts List
+            const catalystsContainer = document.getElementById('catalystsList');
+            catalystsContainer.innerHTML = asset.catalysts.map(c => `
+                <div class="flex items-start space-x-1.5 text-slate-300">
+                    <span class="text-brand-cyan font-bold">•</span>
+                    <span>${c}</span>
+                </div>
+            `).join('');
+
+            // Trade Callouts
+            document.getElementById('signalAction').innerText = asset.signal;
+            document.getElementById('signalAction').className = `px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                asset.signal.includes('BUY') ? 'bg-brand-green/20 text-brand-green border border-brand-green/40' : 
+                asset.signal.includes('SELL') || asset.signal.includes('SHORT') ? 'bg-brand-red/20 text-brand-red border border-brand-red/40' :
+                'bg-brand-amber/20 text-brand-amber border border-brand-amber/40'
+            }`;
+            document.getElementById('targetSL').innerText = asset.sl.toFixed(asset.decimals);
+            document.getElementById('targetTP').innerText = asset.tp.toFixed(asset.decimals);
+
+            // Indicators
+            document.getElementById('valRsi').innerText = asset.rsi + (asset.rsi > 60 ? ' (Bullish)' : asset.rsi < 40 ? ' (Bearish)' : ' (Neutral)');
+            document.getElementById('barRsi').style.width = asset.rsi + '%';
+            document.getElementById('atrValue').innerText = asset.atr;
+
+            lucide.createIcons();
+        }
+
+        function initMainChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            // Gradient Fill for Price Line
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(0, 229, 255, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+
+            const forecastGradient = ctx.createLinearGradient(0, 0, 0, 300);
+            forecastGradient.addColorStop(0, 'rgba(0, 255, 136, 0.2)');
+            forecastGradient.addColorStop(1, 'rgba(0, 255, 136, 0.0)');
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: generateChartDataset(),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { family: 'JetBrains Mono', size: 10 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#10141d',
+                            borderColor: '#1e2638',
+                            borderWidth: 1,
+                            titleFont: { family: 'JetBrains Mono' },
+                            bodyFont: { family: 'JetBrains Mono' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(30, 38, 56, 0.4)' },
+                            ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(30, 38, 56, 0.4)' },
+                            ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateChartDataset() {
+            const asset = assetsData[currentAssetKey];
+            const basePrice = asset.price;
+            const isCrypto = currentAssetKey === 'DOGEUSD';
+            const step = isCrypto ? 0.002 : 0.0008;
+
+            // Past Historical Points (15 points)
+            const labels = [];
+            const historicalData = [];
+            let current = basePrice - (step * 8);
+
+            for (let i = 15; i >= 1; i--) {
+                labels.push(`-${i * (currentTimeframe === '5m' ? 5 : currentTimeframe === '10m' ? 10 : currentTimeframe === '1h' ? 60 : 1440)}m`);
+                current += (Math.random() - 0.47) * step;
+                historicalData.push(Number(current.toFixed(asset.decimals)));
+            }
+
+            // Current price
+            labels.push('NOW');
+            historicalData.push(basePrice);
+
+            // Future AI Forecast Projections (6 points)
+            const forecastBull = [basePrice];
+            const forecastBase = [basePrice];
+            const forecastBear = [basePrice];
+
+            for (let i = 1; i <= 6; i++) {
+                labels.push(`+${i * (currentTimeframe === '5m' ? 5 : currentTimeframe === '10m' ? 10 : currentTimeframe === '1h' ? 60 : 1440)}m`);
+                
+                const bullVal = forecastBull[i - 1] + (step * (1.2 + Math.random() * 0.5));
+                const baseVal = forecastBase[i - 1] + (step * (0.3 + (Math.random() - 0.4)));
+                const bearVal = forecastBear[i - 1] - (step * (0.8 + Math.random() * 0.4));
+
+                forecastBull.push(Number(bullVal.toFixed(asset.decimals)));
+                forecastBase.push(Number(baseVal.toFixed(asset.decimals)));
+                forecastBear.push(Number(bearVal.toFixed(asset.decimals)));
+            }
+
+            // Align historical data with forecast lengths
+            const historicalPadded = [...historicalData, ...Array(6).fill(null)];
+            const forecastBullPadded = [...Array(15).fill(null), ...forecastBull];
+            const forecastBasePadded = [...Array(15).fill(null), ...forecastBase];
+            const forecastBearPadded = [...Array(15).fill(null), ...forecastBear];
+
+            return {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Historical Price',
+                        data: historicalPadded,
+                        borderColor: '#00e5ff',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 2,
+                    },
+                    {
+                        label: 'AI Forecast Bull Case',
+                        data: forecastBullPadded,
+                        borderColor: '#00ff88',
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        tension: 0.3,
+                        pointRadius: 3,
+                    },
+                    {
+                        label: 'AI Base Trajectory',
+                        data: forecastBasePadded,
+                        borderColor: '#ffb700',
+                        borderWidth: 1.5,
+                        borderDash: [2, 2],
+                        tension: 0.3,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'AI Forecast Bear Case',
+                        data: forecastBearPadded,
+                        borderColor: '#ff0055',
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        tension: 0.3,
+                        pointRadius: 3,
+                    }
+                ]
+            };
+        }
+
+        function updateChartData() {
+            if (!chartInstance) return;
+            chartInstance.data = generateChartDataset();
+            chartInstance.update('none');
+        }
+
+        function initGaugeChart() {
+            const ctx = document.getElementById('sentimentGauge').getContext('2d');
+            gaugeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [84, 16],
+                        backgroundColor: ['#00ff88', '#1e2638'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    rotation: -90,
+                    circumference: 180,
+                    cutout: '78%',
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateGaugeChart(score) {
+            if (!gaugeChartInstance) return;
+            // Scale score -100 to +100 to 0-100 gauge percentage
+            const percentage = Math.max(5, Math.min(95, ((score + 100) / 200) * 100));
+            const color = score >= 0 ? '#00ff88' : '#ff0055';
+            
+            gaugeChartInstance.data.datasets[0].data = [percentage, 100 - percentage];
+            gaugeChartInstance.data.datasets[0].backgroundColor = [color, '#1e2638'];
+            gaugeChartInstance.update();
+        }
+
+        const mockFeedItems = [
+            { source: 'r/CryptoCurrency', msg: 'Whale wall absorbing 1.2M DOGE at $0.1620 level.', sentiment: 'bullish' },
+            { source: 'Telegram @FXSignals', msg: 'EUR/CHF long setup forming on 15m order block.', sentiment: 'bullish' },
+            { source: 'Reuters Macro', msg: 'Swiss National Bank remarks suggest low probability of immediate foreign intervention.', sentiment: 'neutral' },
+            { source: 'Bloomberg FX', msg: 'USD/JPY volatility spikes as Tokyo liquidity session opens.', sentiment: 'neutral' },
+            { source: 'r/Forex', msg: 'ECB speech chatter increasing. Retail traders positioning short on EUR pairs.', sentiment: 'bearish' },
+            { source: 'Coindesk Feed', msg: 'Crypto Fear & Greed Index rises to 74 (Greed).', sentiment: 'bullish' }
+        ];
+
+        function startScraperFeedSimulation() {
+            const terminal = document.getElementById('terminalLogs');
+
+            setInterval(() => {
+                const randomItem = mockFeedItems[Math.floor(Math.random() * mockFeedItems.length)];
+                const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = "flex items-start space-x-2 border-b border-brand-border/30 pb-1.5 animate-fadeIn";
+                logEntry.innerHTML = `
+                    <span class="text-slate-500 font-mono text-[10px]">${time}</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-brand-border text-brand-cyan">${randomItem.source}</span>
+                    <span class="text-slate-300 font-mono text-[11px] flex-1">${randomItem.msg}</span>
+                `;
+
+                terminal.prepend(logEntry);
+
+                // Maintain clean log count
+                if (terminal.children.length > 25) {
+                    terminal.removeChild(terminal.lastChild);
+                }
+            }, 3200);
+        }
+
+        function startPriceTickSimulation() {
+            setInterval(() => {
+                const asset = assetsData[currentAssetKey];
+                const delta = (Math.random() - 0.49) * (currentAssetKey === 'DOGEUSD' ? 0.0008 : 0.00015);
+                asset.price += delta;
+
+                // Update UI Price Text with Micro Flash Animation
+                const priceEl = document.getElementById('currentAssetPrice');
+                if (priceEl) {
+                    priceEl.innerText = asset.price.toFixed(asset.decimals);
+                    priceEl.className = `font-mono text-2xl font-bold tracking-tight transition-colors duration-300 ${
+                        delta >= 0 ? 'text-brand-green' : 'text-brand-red'
+                    }`;
+
+                    setTimeout(() => {
+                        priceEl.className = "font-mono text-2xl font-bold tracking-tight text-slate-100";
+                    }, 400);
+                }
+
+            }, 2000);
+        }
+
+        function startTickerTape() {
+            const tapeContainer = document.getElementById('tickerTape');
+            const keys = Object.keys(assetsData);
+
+            function renderTape() {
+                tapeContainer.innerHTML = keys.map(k => {
+                    const a = assetsData[k];
+                    return `
+                        <div class="inline-flex items-center space-x-2 cursor-pointer hover:text-brand-cyan" onclick="switchAsset('${k}')">
+                            <span class="font-bold text-slate-200">${a.name}:</span>
+                            <span>${a.price.toFixed(a.decimals)}</span>
+                            <span class="${a.change >= 0 ? 'text-brand-green' : 'text-brand-red'} font-bold">
+                                ${a.change >= 0 ? '+' : ''}${a.change}%
+                            </span>
+                        </div>
+                    `;
+                }).join('<span class="text-slate-700">|</span>');
+            }
+
+            renderTape();
+            setInterval(renderTape, 4000);
+        }
+
+        function forceReanalyze() {
+            const btnText = document.getElementById('ingestBtnText');
+            const icon = document.getElementById('ingestIcon');
+
+            btnText.innerText = "INGESTING FEEDS...";
+            icon.classList.add('animate-spin');
+
+            setTimeout(() => {
+                // Randomize slightly to simulate fresh AI output
+                assetsData[currentAssetKey].confidence = Number((80 + Math.random() * 15).toFixed(1));
+                assetsData[currentAssetKey].sentiment = Number((-40 + Math.random() * 130).toFixed(1));
+
+                updateDashboardUI();
+                updateChartData();
+
+                btnText.innerText = "INGEST & RE-ANALYZE";
+                icon.classList.remove('animate-spin');
+            }, 1200);
+        }
+
+        function openDeployModal() {
+            document.getElementById('deployModal').classList.remove('hidden');
+        }
+
+        function closeDeployModal() {
+            document.getElementById('deployModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
